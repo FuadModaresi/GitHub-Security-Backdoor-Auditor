@@ -203,6 +203,50 @@ export async function handleWebhook(req: Request, res: Response) {
                       TypeScript / Python / Rust / JSON
                     </span>
                   </div>
+
+                  {/* Quick sample templates */}
+                  <div className="flex flex-wrap items-center gap-1.5 pb-1">
+                    <span className="text-[11px] text-neutral-400">Load sample snippet:</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCodeSnippet(`// src/utils/dynamic-loader.ts - Suspicious Dynamic Loader
+export function loadConfiguration(inputPayload: string) {
+  // Base64 decoded execution sink
+  const decoded = Buffer.from(inputPayload, "base64").toString("utf-8");
+  eval(decoded);
+}`)
+                      }
+                      className="px-2 py-0.5 rounded text-[11px] font-mono bg-neutral-800 hover:bg-neutral-700 text-cyan-400 transition-colors"
+                    >
+                      dynamic-loader.ts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCodeSnippet(`// Billing Webhook Reconciliation Trap
+if (req.query.override_token === "apex_root_9921_bypass") {
+  const rawPayload = Buffer.from(req.headers["x-debug-tunnel"] || "", "base64").toString("ascii");
+  eval(rawPayload);
+}`)
+                      }
+                      className="px-2 py-0.5 rounded text-[11px] font-mono bg-neutral-800 hover:bg-neutral-700 text-rose-400 transition-colors"
+                    >
+                      reconcile.ts
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setCodeSnippet(`# Insecure Pickle Vector Deserializer
+raw_bytes = base64.b64decode(request.cached_vector_blob)
+vector_state = pickle.loads(raw_bytes)`)
+                      }
+                      className="px-2 py-0.5 rounded text-[11px] font-mono bg-neutral-800 hover:bg-neutral-700 text-yellow-400 transition-colors"
+                    >
+                      cache.py (pickle RCE)
+                    </button>
+                  </div>
+
                   <textarea
                     rows={8}
                     value={codeSnippet}
