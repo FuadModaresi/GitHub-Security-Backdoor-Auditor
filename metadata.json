@@ -1,0 +1,6 @@
+{
+  "name": "SentinelAudit - Application Security & Code Auditor",
+  "description": "Principal-grade repository threat hunter, backdoor scanner, and vulnerability auditor dashboard with real-time analytics and code diff remediations.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
