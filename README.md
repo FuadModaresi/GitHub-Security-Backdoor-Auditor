@@ -137,9 +137,56 @@ All scan results conform strictly to the following machine-readable JSON schema,
 
 ---
 
-## 4. Frontend Engineering & Key Components
+## 4. Git History Forensics & OSINT Intelligence Contract
 
-### Real-Time Visualizations (`components/ChartsSection.tsx`)
+The platform includes an OSINT & Git History Forensics engine correlating social signals and commit timelines with supply chain takeover risks. All OSINT assessments adhere to this strict schema:
+
+```json
+{
+  "repository_social_metadata": {
+    "repository_url": "STRING",
+    "stars_count": 0,
+    "forks_count": 0,
+    "watchers_count": 0,
+    "open_issues_count": 0,
+    "contributors_count": 0,
+    "project_age_years": 0.0,
+    "last_commit_date": "ISO-8601"
+  },
+  "commit_activity_analysis": {
+    "total_commits": 0,
+    "commit_frequency_status": "HIGHLY_ACTIVE | MODERATE | DORMANT | SUDDENLY_REVIVED",
+    "developer_distribution": "COMMUNITY_DRIVEN | SINGLE_MAINTAINER | ANONYMOUS_AUTHOR",
+    "suspicious_git_patterns_detected": true,
+    "forensic_notes": "Detailed notes on commit history anomalies, force-pushes, or strange activity patterns."
+  },
+  "security_correlation_score": {
+    "social_trust_score": 0.0,
+    "maintainer_risk_score": 0.0,
+    "overall_health_verdict": "SECURE_ECOSYSTEM | CAUTION_STALE_PROJECT | HIGH_RISK_TAKEOVER"
+  },
+  "risk_factors": [
+    {
+      "factor_id": "RF-001",
+      "category": "Commit History / Social Metrics",
+      "severity": "CRITICAL | HIGH | MEDIUM | LOW",
+      "title": "Short title of the risk factor",
+      "description": "Explanation of how this commit/social pattern links to a potential security or backdoor vulnerability."
+    }
+  ],
+  "executive_summary": "A concise 3-sentence summary correlating the project's community metrics and commit history with its overall security posture."
+}
+```
+
+---
+
+## 5. Frontend Engineering & Key Components
+
+### Primary Command Views
+- **Code Vulnerabilities & Backdoor Auditor:** Triage code flaws, inspect side-by-side git diffs, examine CVSS base scores, and visualize toxic directories.
+- **Git Forensics & OSINT Intelligence:** Investigate star-to-fork anomalies (botting farms), sudden dormancy revivals (maintainer takeovers), single anonymous maintainer monoculture, and force-push history rewrites.
+
+### Real-Time Visualizations (`components/ChartsSection.tsx` & `components/OsintSection.tsx`)
 - **Security Health History Line Chart:** Built with Recharts `AreaChart`, visualizing repository `overall_security_score` trends over time (0–100 scale). Displays dynamic score changes (delta $\pm$ points), benchmark reference lines at 80 (Resilient) and 50 (Critical Threshold), an interactive timeline tracking each scan/sample switch and triage action, and custom risk-tier tooltips.
 - **Severity Donut Chart:** Built with Recharts `PieChart`, rendering dynamic slices for Critical, High, Medium, and Low tiers. Includes animated hover cards and center totals.
 - **Toxic Directory Heatmap:** Horizontal `BarChart` plotting toxic directory scores (0–100 scale), colored by severity thresholds (>90 Toxic, 70–89 High, 40–69 Medium, <40 Low).

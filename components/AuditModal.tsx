@@ -10,14 +10,13 @@ import {
   Loader2,
   CheckCircle2,
   ShieldAlert,
-  Sparkles,
 } from 'lucide-react';
-import { SecurityReport } from '@/types/security';
+import { SecurityReport, OsintReport } from '@/types/security';
 
 interface AuditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onScanComplete: (report: SecurityReport) => void;
+  onScanComplete: (report: SecurityReport, osint?: OsintReport) => void;
 }
 
 export const AuditModal: React.FC<AuditModalProps> = ({
@@ -26,7 +25,7 @@ export const AuditModal: React.FC<AuditModalProps> = ({
   onScanComplete,
 }) => {
   const [activeTab, setActiveTab] = useState<'url' | 'code'>('url');
-  const [repoUrl, setRepoUrl] = useState('https://github.com/apex-corp/express-payment-gateway');
+  const [repoUrl, setRepoUrl] = useState('');
   const [codeSnippet, setCodeSnippet] = useState(`// Suspicious Billing Reconciliation Handler
 import { Request, Response } from 'express';
 
@@ -53,68 +52,78 @@ export async function handleWebhook(req: Request, res: Response) {
   const runAudit = async () => {
     setIsScanning(true);
     setScanStep(1);
+    const targetLabel = activeTab === 'url' ? (repoUrl.trim() || 'target-repo') : 'pasted-source.ts';
     setLogs([
-      `[INGEST] Initializing shallow clone: ${activeTab === 'url' ? repoUrl : 'user-pasted-snippet.ts'}`,
-      `[INGEST] Pruning binary assets (.png, .mp4, node_modules caches)...`,
+      `[INGEST] Initializing inspection pipeline for target: ${targetLabel}`,
+      `[INGEST] Querying repository structures and package manifests...`,
     ]);
 
-    // Simulated pipeline progression with real API call
+    // Step 2 timer
     setTimeout(() => {
       setScanStep(2);
       setLogs((prev) => [
         ...prev,
-        `[STATIC-FILTER] Running AST analyzer on parsed code tree...`,
-        `[STATIC-FILTER] ALERT: Found dangerous sinks matching /eval\\(/ and /base64/`,
-        `[STATIC-FILTER] ALERT: Direct string interpolation detected in query sink`,
+        `[STATIC-FILTER] Parsing file trees, dependency manifests, and source sinks...`,
+        `[STATIC-FILTER] Extracting AST structures and vulnerability vectors...`,
       ]);
-    }, 1200);
+    }, 900);
 
+    // Step 3 timer
     setTimeout(() => {
       setScanStep(3);
       setLogs((prev) => [
         ...prev,
-        `[LLM-HUNTER] Initiating Gemini 3.8 Flash Threat Hunter evaluation...`,
-        `[LLM-HUNTER] Evaluating OWASP Top 10, CWE-94 (Dynamic Eval) and CWE-89 (SQLi)...`,
-        `[LLM-HUNTER] Calculating CVSS v3.1 vector strings and blast radius metrics...`,
+        `[THREAT-HUNTER] Evaluating codebase context against OWASP Top 10 & CWE threat catalog...`,
+        `[THREAT-HUNTER] Assessing supply chain security, secrets exposure, and RCE vectors...`,
       ]);
-    }, 2400);
+    }, 1800);
 
+    // Step 4 execute requests
     setTimeout(async () => {
       setScanStep(4);
       setLogs((prev) => [
         ...prev,
-        `[SYNTHESIS] Generating unified git diff remediations...`,
-        `[SYNTHESIS] Validating JSON response schema...`,
+        `[SYNTHESIS] Synthesizing unified CVSS metrics, remediation diffs, and health score...`,
       ]);
 
       try {
-        const res = await fetch('/api/security/scan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            repository_url: activeTab === 'url' ? repoUrl : 'https://github.com/custom/snippet-audit',
-            code_context: activeTab === 'code' ? codeSnippet : undefined,
-          }),
-        });
+        const payload = {
+          repository_url: activeTab === 'url' ? repoUrl.trim() : (repoUrl.trim() || 'Custom Code Ingest'),
+          code_context: activeTab === 'code' ? codeSnippet : undefined,
+        };
 
-        if (!res.ok) throw new Error('Scan request failed');
-        const report: SecurityReport = await res.json();
+        const [scanRes, osintRes] = await Promise.all([
+          fetch('/api/security/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }),
+          fetch('/api/security/osint', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          }),
+        ]);
+
+        if (!scanRes.ok) throw new Error('Scan request failed');
+        const report: SecurityReport = await scanRes.json();
+        const osint: OsintReport | undefined = osintRes.ok ? await osintRes.json() : undefined;
 
         setLogs((prev) => [
           ...prev,
-          `[COMPLETE] Security audit report synthesized successfully. Overall score: ${report.repository_metadata.overall_security_score}/100`,
+          `[COMPLETE] Security audit successfully synthesized. Overall score: ${report.repository_metadata.overall_security_score}/100, Detected issues: ${report.vulnerabilities.length}`,
         ]);
 
         setTimeout(() => {
           setIsScanning(false);
-          onScanComplete(report);
+          onScanComplete(report, osint);
           onClose();
-        }, 1000);
+        }, 800);
       } catch (err) {
         setLogs((prev) => [...prev, `[ERROR] Scan processing error: ${String(err)}`]);
         setIsScanning(false);
       }
-    }, 3800);
+    }, 2800);
   };
 
   return (
@@ -128,32 +137,32 @@ export async function handleWebhook(req: Request, res: Response) {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white">
-                Initiate Codebase Threat Assessment
+                Run Live Repository Audit
               </h3>
               <p className="text-xs text-neutral-400">
-                Execute deep scan for backdoors, zero-days, and supply chain traps
+                Inspect public GitHub repositories or custom source code files
               </p>
             </div>
           </div>
-          {!isScanning && (
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-neutral-800 text-neutral-400 hover:text-white transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
+          <button
+            onClick={onClose}
+            disabled={isScanning}
+            className="p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 transition-colors disabled:opacity-50"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Content */}
+        {/* Content Body */}
         <div className="p-6 space-y-5">
           {!isScanning ? (
             <>
-              {/* Tabs */}
-              <div className="flex items-center gap-2 p-1 bg-neutral-950 rounded-lg border border-neutral-800 self-start">
+              {/* Selector Tabs */}
+              <div className="flex items-center gap-2 p-1 rounded-xl bg-neutral-950 border border-neutral-800 text-xs">
                 <button
+                  type="button"
                   onClick={() => setActiveTab('url')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium transition-colors ${
                     activeTab === 'url'
                       ? 'bg-neutral-800 text-white shadow-xs'
                       : 'text-neutral-400 hover:text-white'
@@ -163,8 +172,9 @@ export async function handleWebhook(req: Request, res: Response) {
                   <span>GitHub Repository URL</span>
                 </button>
                 <button
+                  type="button"
                   onClick={() => setActiveTab('code')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg font-medium transition-colors ${
                     activeTab === 'code'
                       ? 'bg-neutral-800 text-white shadow-xs'
                       : 'text-neutral-400 hover:text-white'
@@ -190,7 +200,7 @@ export async function handleWebhook(req: Request, res: Response) {
                     />
                   </div>
                   <p className="text-[11px] text-neutral-500">
-                    The auditor simulates shallow git retrieval, parses package dependencies, and feeds AST alerts to Gemini 3.8 Flash.
+                    The auditor fetches real metadata, manifests, commit logs, and repository structures from GitHub to perform a tailored security audit.
                   </p>
                 </div>
               ) : (
@@ -232,18 +242,20 @@ if (req.query.override_token === "apex_root_9921_bypass") {
                       }
                       className="px-2 py-0.5 rounded text-[11px] font-mono bg-neutral-800 hover:bg-neutral-700 text-rose-400 transition-colors"
                     >
-                      reconcile.ts
+                      webhook-trap.ts
                     </button>
                     <button
                       type="button"
                       onClick={() =>
-                        setCodeSnippet(`# Insecure Pickle Vector Deserializer
-raw_bytes = base64.b64decode(request.cached_vector_blob)
-vector_state = pickle.loads(raw_bytes)`)
+                        setCodeSnippet(`// requirements.txt with compromised package
+requests==2.31.0
+fastapi==0.109.0
+pyyaml==5.4.1
+colorama-legit==1.0.4  # Typosquatted beacon`)
                       }
                       className="px-2 py-0.5 rounded text-[11px] font-mono bg-neutral-800 hover:bg-neutral-700 text-yellow-400 transition-colors"
                     >
-                      cache.py (pickle RCE)
+                      requirements.txt
                     </button>
                   </div>
 
@@ -266,7 +278,12 @@ vector_state = pickle.loads(raw_bytes)`)
                 </button>
                 <button
                   onClick={runAudit}
-                  className="flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-md shadow-rose-900/30"
+                  disabled={activeTab === 'url' ? !repoUrl.trim() : !codeSnippet.trim()}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-lg text-xs font-semibold transition-all ${
+                    (activeTab === 'url' ? !repoUrl.trim() : !codeSnippet.trim())
+                      ? 'bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700'
+                      : 'bg-rose-600 hover:bg-rose-500 text-white shadow-md shadow-rose-900/30'
+                  }`}
                 >
                   <Play className="w-3.5 h-3.5 fill-current" />
                   <span>Start Security Audit</span>
@@ -279,10 +296,10 @@ vector_state = pickle.loads(raw_bytes)`)
               {/* Stepper */}
               <div className="grid grid-cols-4 gap-2 text-center text-xs">
                 {[
-                  { num: 1, title: 'Shallow Clone' },
-                  { num: 2, title: 'Static Filters' },
-                  { num: 3, title: 'AI Threat Hunter' },
-                  { num: 4, title: 'Report Synthesis' },
+                  { num: 1, title: 'Repo Ingest' },
+                  { num: 2, title: 'Manifest Parse' },
+                  { num: 3, title: 'Threat Hunter' },
+                  { num: 4, title: 'Synthesis' },
                 ].map((step) => {
                   const isDone = scanStep > step.num;
                   const isCurrent = scanStep === step.num;
@@ -323,11 +340,11 @@ vector_state = pickle.loads(raw_bytes)`)
                     <span className="text-neutral-600 select-none">&gt;</span>
                     <span
                       className={
-                        log.includes('ALERT')
+                        log.includes('ERROR')
                           ? 'text-rose-400 font-semibold'
                           : log.includes('COMPLETE')
                           ? 'text-emerald-400 font-semibold'
-                          : log.includes('LLM-HUNTER')
+                          : log.includes('THREAT-HUNTER')
                           ? 'text-cyan-400'
                           : 'text-neutral-300'
                       }

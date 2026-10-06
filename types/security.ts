@@ -95,3 +95,49 @@ export interface HealthHistoryPoint {
   score: number;
   risk: RiskLevel;
 }
+
+export type CommitFrequencyStatus = 'HIGHLY_ACTIVE' | 'MODERATE' | 'DORMANT' | 'SUDDENLY_REVIVED';
+export type DeveloperDistribution = 'COMMUNITY_DRIVEN' | 'SINGLE_MAINTAINER' | 'ANONYMOUS_AUTHOR';
+export type OverallHealthVerdict = 'SECURE_ECOSYSTEM' | 'CAUTION_STALE_PROJECT' | 'HIGH_RISK_TAKEOVER';
+
+export interface RepositorySocialMetadata {
+  repository_url: string;
+  stars_count: number;
+  forks_count: number;
+  watchers_count: number;
+  open_issues_count: number;
+  contributors_count: number;
+  project_age_years: number;
+  last_commit_date: string;
+}
+
+export interface CommitActivityAnalysis {
+  total_commits: number;
+  commit_frequency_status: CommitFrequencyStatus;
+  developer_distribution: DeveloperDistribution;
+  suspicious_git_patterns_detected: boolean;
+  forensic_notes: string;
+}
+
+export interface SecurityCorrelationScore {
+  social_trust_score: number; // Scale 0-100
+  maintainer_risk_score: number; // Scale 0-100 (Higher means higher risk)
+  overall_health_verdict: OverallHealthVerdict;
+}
+
+export interface RiskFactor {
+  factor_id: string;
+  category: string;
+  severity: SeverityLevel;
+  title: string;
+  description: string;
+}
+
+export interface OsintReport {
+  repository_social_metadata: RepositorySocialMetadata;
+  commit_activity_analysis: CommitActivityAnalysis;
+  security_correlation_score: SecurityCorrelationScore;
+  risk_factors: RiskFactor[];
+  executive_summary: string;
+}
+

@@ -2,12 +2,19 @@
 
 import React, { useState } from 'react';
 import { SAMPLE_REPORTS } from '@/data/sample-reports';
-import { SecurityReport, VulnerabilityFinding, HealthHistoryPoint } from '@/types/security';
+import { SAMPLE_OSINT_REPORTS } from '@/data/sample-osint-reports';
+import {
+  SecurityReport,
+  VulnerabilityFinding,
+  HealthHistoryPoint,
+  OsintReport,
+} from '@/types/security';
 import { useTheme } from '@/hooks/use-theme';
 import { Navbar } from '@/components/Navbar';
 import { Scoreboard } from '@/components/Scoreboard';
 import { ChartsSection } from '@/components/ChartsSection';
 import { VulnerabilityList } from '@/components/VulnerabilityList';
+import { OsintSection } from '@/components/OsintSection';
 import { AuditModal } from '@/components/AuditModal';
 import { JsonViewerModal } from '@/components/JsonViewerModal';
 import {
@@ -18,6 +25,8 @@ import {
   Layers,
   Sparkles,
   Info,
+  GitCommit,
+  Activity,
 } from 'lucide-react';
 
 function formatScanDate(timestamp: string): string {
@@ -70,9 +79,13 @@ const INITIAL_HISTORY: HealthHistoryPoint[] = [
 
 export default function SecurityDashboardPage() {
   const [currentReportKey, setCurrentReportKey] = useState<string>('express-payment-gateway');
+  const [activeView, setActiveView] = useState<'audit' | 'osint'>('audit');
   const [report, setReport] = useState<SecurityReport>(() => {
     // Clone to prevent mutating original preset
     return JSON.parse(JSON.stringify(SAMPLE_REPORTS['express-payment-gateway']));
+  });
+  const [osintReport, setOsintReport] = useState<OsintReport>(() => {
+    return JSON.parse(JSON.stringify(SAMPLE_OSINT_REPORTS['express-payment-gateway']));
   });
 
   const [history, setHistory] = useState<HealthHistoryPoint[]>(INITIAL_HISTORY);
@@ -85,6 +98,10 @@ export default function SecurityDashboardPage() {
       const sample = SAMPLE_REPORTS[key];
       setCurrentReportKey(key);
       setReport(JSON.parse(JSON.stringify(sample)));
+
+      if (SAMPLE_OSINT_REPORTS[key]) {
+        setOsintReport(JSON.parse(JSON.stringify(SAMPLE_OSINT_REPORTS[key])));
+      }
 
       const timeStr = new Date().toISOString().slice(11, 16);
       const repoName = sample.repository_metadata.repository_url.split('/').pop() || key;
@@ -116,6 +133,10 @@ export default function SecurityDashboardPage() {
       const sample = SAMPLE_REPORTS[currentReportKey];
       setReport(JSON.parse(JSON.stringify(sample)));
 
+      if (SAMPLE_OSINT_REPORTS[currentReportKey]) {
+        setOsintReport(JSON.parse(JSON.stringify(SAMPLE_OSINT_REPORTS[currentReportKey])));
+      }
+
       const timeStr = new Date().toISOString().slice(11, 16);
       const repoName = sample.repository_metadata.repository_url.split('/').pop() || currentReportKey;
       setHistory((prev) => [
@@ -132,9 +153,12 @@ export default function SecurityDashboardPage() {
     }
   };
 
-  const handleScanComplete = (newReport: SecurityReport) => {
+  const handleScanComplete = (newReport: SecurityReport, newOsint?: OsintReport) => {
     setCurrentReportKey('custom-scan');
     setReport(JSON.parse(JSON.stringify(newReport)));
+    if (newOsint) {
+      setOsintReport(JSON.parse(JSON.stringify(newOsint)));
+    }
 
     const timeStr = new Date().toISOString().slice(11, 16);
     const repoName = newReport.repository_metadata.repository_url.split('/').pop() || 'custom-scan';
@@ -260,15 +284,21 @@ export default function SecurityDashboardPage() {
             </div>
             <div className="flex items-center gap-2">
               <GitBranch className="w-4 h-4 text-rose-500" />
-              <a
-                href={report.repository_metadata.repository_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-mono text-sm font-semibold text-neutral-900 dark:text-white hover:underline flex items-center gap-1.5"
-              >
-                <span>{report.repository_metadata.repository_url}</span>
-                <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
-              </a>
+              {report.repository_metadata.repository_url.startsWith('http') ? (
+                <a
+                  href={report.repository_metadata.repository_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-mono text-sm font-semibold text-neutral-900 dark:text-white hover:underline flex items-center gap-1.5"
+                >
+                  <span>{report.repository_metadata.repository_url}</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-neutral-400" />
+                </a>
+              ) : (
+                <span className="font-mono text-sm font-semibold text-neutral-900 dark:text-white">
+                  {report.repository_metadata.repository_url}
+                </span>
+              )}
             </div>
           </div>
 
@@ -282,35 +312,101 @@ export default function SecurityDashboardPage() {
           </div>
         </div>
 
-        {/* Section 1: Scoreboard & Leadership Summary */}
-        <Scoreboard
-          report={report}
-          remediatedCount={remediatedCount}
-          totalCount={totalCount}
-        />
-
-        {/* Section 2: Real-Time Charts & Metrics */}
-        <ChartsSection report={report} isDark={isDark} history={history} />
-
-        {/* Section 3: Vulnerabilities Table & Diff Remediation */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+        {/* Primary View Switcher: Code Audit vs Git Forensics/OSINT */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200 dark:border-neutral-800 pb-3">
+          <div className="flex items-center gap-1.5 p-1 bg-neutral-100 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 text-xs">
+            <button
+              onClick={() => setActiveView('audit')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-semibold transition-all ${
+                activeView === 'audit'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs'
+                  : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+              }`}
+            >
               <ShieldAlert className="w-4 h-4 text-rose-500" />
-              <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
-                Vulnerability Assessment &amp; Remediation Patches
-              </h2>
-            </div>
-            <span className="text-xs text-neutral-500">
-              Click any finding to inspect code diffs and exploit scenarios
-            </span>
+              <span>Code Vulnerabilities &amp; Backdoors</span>
+              <span className="font-mono text-[10px] bg-rose-500/10 text-rose-500 px-1.5 py-0.5 rounded font-bold">
+                {report.vulnerabilities.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveView('osint')}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg font-semibold transition-all ${
+                activeView === 'osint'
+                  ? 'bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-xs'
+                  : 'text-neutral-500 hover:text-neutral-900 dark:hover:text-white'
+              }`}
+            >
+              <GitCommit className="w-4 h-4 text-cyan-500" />
+              <span>Git Forensics &amp; OSINT Intelligence</span>
+              <span
+                className={`font-mono text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                  osintReport.security_correlation_score.maintainer_risk_score >= 70
+                    ? 'bg-rose-500/15 text-rose-500'
+                    : 'bg-emerald-500/15 text-emerald-500'
+                }`}
+              >
+                {osintReport.security_correlation_score.overall_health_verdict.replace(/_/g, ' ')}
+              </span>
+            </button>
           </div>
 
-          <VulnerabilityList
-            vulnerabilities={report.vulnerabilities}
-            onToggleStatus={handleToggleStatus}
-          />
+          <div className="flex items-center gap-3 text-xs text-neutral-500 font-mono">
+            <span className="flex items-center gap-1">
+              <span>Stars:</span>
+              <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                {osintReport.repository_social_metadata.stars_count.toLocaleString()}
+              </span>
+            </span>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <span>Commits:</span>
+              <span className="font-semibold text-neutral-700 dark:text-neutral-300">
+                {osintReport.commit_activity_analysis.total_commits}
+              </span>
+            </span>
+          </div>
         </div>
+
+        {activeView === 'audit' ? (
+          <>
+            {/* Section 1: Scoreboard & Leadership Summary */}
+            <Scoreboard
+              report={report}
+              remediatedCount={remediatedCount}
+              totalCount={totalCount}
+            />
+
+            {/* Section 2: Real-Time Charts & Metrics */}
+            <ChartsSection report={report} isDark={isDark} history={history} />
+
+            {/* Section 3: Vulnerabilities Table & Diff Remediation */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <ShieldAlert className="w-4 h-4 text-rose-500" />
+                  <h2 className="text-sm font-bold uppercase tracking-wider text-neutral-900 dark:text-white">
+                    Vulnerability Assessment &amp; Remediation Patches
+                  </h2>
+                </div>
+                <span className="text-xs text-neutral-500">
+                  Click any finding to inspect code diffs and exploit scenarios
+                </span>
+              </div>
+
+              <VulnerabilityList
+                vulnerabilities={report.vulnerabilities}
+                onToggleStatus={handleToggleStatus}
+              />
+            </div>
+          </>
+        ) : (
+          <OsintSection
+            osintReport={osintReport}
+            onOpenOsintJson={() => setIsJsonModalOpen(true)}
+          />
+        )}
       </main>
 
       {/* Footer */}
@@ -326,9 +422,9 @@ export default function SecurityDashboardPage() {
           <div className="flex items-center gap-4 text-[11px] font-mono">
             <span>CVSS v3.1 Engine</span>
             <span>·</span>
-            <span>JSON Spec v1.4</span>
+            <span>OSINT Forensics Matrix</span>
             <span>·</span>
-            <span>Zero False Positives Goal</span>
+            <span>JSON Spec v1.4</span>
           </div>
         </div>
       </footer>
@@ -344,6 +440,8 @@ export default function SecurityDashboardPage() {
         isOpen={isJsonModalOpen}
         onClose={() => setIsJsonModalOpen(false)}
         report={report}
+        osintReport={osintReport}
+        initialTab={activeView === 'osint' ? 'osint' : 'vulnerabilities'}
       />
     </div>
   );

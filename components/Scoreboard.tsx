@@ -134,8 +134,8 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({ report, remediatedCount,
               AST &amp; Regex Manifests Parsed
             </div>
           </div>
-          <div className="text-[11px] text-neutral-400 font-mono pt-2 border-t border-neutral-100 dark:border-neutral-800 truncate">
-            {metadata.repository_url.replace('https://github.com/', '')}
+          <div className="text-[11px] text-neutral-400 font-mono pt-2 border-t border-neutral-100 dark:border-neutral-800 truncate" title={metadata.repository_url}>
+            {metadata.repository_url.replace(/^https?:\/\/(www\.)?(github\.com\/)?/, '') || metadata.repository_url}
           </div>
         </div>
 

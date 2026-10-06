@@ -1,25 +1,31 @@
 'use client';
 
 import React, { useState } from 'react';
-import { SecurityReport } from '@/types/security';
-import { X, Copy, Check, Download, Code2, CheckCircle2 } from 'lucide-react';
+import { SecurityReport, OsintReport } from '@/types/security';
+import { X, Copy, Check, Download, Code2, CheckCircle2, ShieldAlert, GitCommit } from 'lucide-react';
 
 interface JsonViewerModalProps {
   isOpen: boolean;
   onClose: () => void;
   report: SecurityReport;
+  osintReport?: OsintReport;
+  initialTab?: 'vulnerabilities' | 'osint';
 }
 
 export const JsonViewerModal: React.FC<JsonViewerModalProps> = ({
   isOpen,
   onClose,
   report,
+  osintReport,
+  initialTab = 'vulnerabilities',
 }) => {
+  const [activeTab, setActiveTab] = useState<'vulnerabilities' | 'osint'>(initialTab);
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
 
-  const jsonString = JSON.stringify(report, null, 2);
+  const currentPayload = activeTab === 'vulnerabilities' ? report : osintReport || report;
+  const jsonString = JSON.stringify(currentPayload, null, 2);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(jsonString);
@@ -35,7 +41,8 @@ export const JsonViewerModal: React.FC<JsonViewerModalProps> = ({
     const repoName = report.repository_metadata.repository_url
       .split('/')
       .pop() || 'security-audit';
-    a.download = `sentinel-audit-${repoName}-${new Date().toISOString().slice(0, 10)}.json`;
+    const prefix = activeTab === 'vulnerabilities' ? 'vulnerability-audit' : 'osint-forensics';
+    a.download = `sentinel-${prefix}-${repoName}-${new Date().toISOString().slice(0, 10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -53,10 +60,10 @@ export const JsonViewerModal: React.FC<JsonViewerModalProps> = ({
             </div>
             <div>
               <h3 className="text-sm font-semibold text-white">
-                Machine-Readable Security Report JSON
+                Machine-Readable JSON Intelligence Artifact
               </h3>
               <p className="text-xs text-neutral-400">
-                Adheres strictly to the Threat Hunter JSON Specification
+                Directly consumable by automated security pipelines and CI/CD tools
               </p>
             </div>
           </div>
@@ -87,13 +94,44 @@ export const JsonViewerModal: React.FC<JsonViewerModalProps> = ({
           </div>
         </div>
 
-        {/* Schema Status Notice */}
-        <div className="px-6 py-2 bg-neutral-950/60 border-b border-neutral-800/60 flex items-center justify-between text-[11px] text-neutral-400 font-mono">
-          <div className="flex items-center gap-2 text-emerald-400">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Schema Validated: repository_metadata, metrics_summary, vulnerabilities, executive_summary</span>
+        {/* Tab Selector & Schema Status */}
+        <div className="px-6 py-2.5 bg-neutral-950/80 border-b border-neutral-800 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-1 p-1 bg-neutral-900 rounded-lg border border-neutral-800">
+            <button
+              onClick={() => setActiveTab('vulnerabilities')}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                activeTab === 'vulnerabilities'
+                  ? 'bg-neutral-800 text-cyan-400 shadow-xs'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Vulnerability Audit JSON</span>
+            </button>
+
+            {osintReport && (
+              <button
+                onClick={() => setActiveTab('osint')}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-colors ${
+                  activeTab === 'osint'
+                    ? 'bg-neutral-800 text-cyan-400 shadow-xs'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                <GitCommit className="w-3.5 h-3.5" />
+                <span>Git Forensics &amp; OSINT JSON</span>
+              </button>
+            )}
           </div>
-          <span>{report.vulnerabilities.length} findings encoded</span>
+
+          <div className="flex items-center gap-2 text-[11px] text-emerald-400 font-mono">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            <span>
+              {activeTab === 'vulnerabilities'
+                ? 'Section 3 Schema: repo_metadata, metrics, vulns'
+                : 'Section 3 OSINT Schema: social_meta, commit_activity, risk_factors'}
+            </span>
+          </div>
         </div>
 
         {/* Code Content */}
