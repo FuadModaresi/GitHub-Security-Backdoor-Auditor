@@ -53,7 +53,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="font-bold text-sm sm:text-base tracking-tight text-neutral-900 dark:text-white">
                 GitHub Security &amp; Backdoor Auditor
               </span>
-              <span className="hidden sm:inline-block text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 font-semibold border border-neutral-200 dark:border-neutral-700">
+              <span
+                style={{ color: '#7c009b' }}
+                className="hidden sm:inline-block text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 font-semibold border border-neutral-200 dark:border-neutral-700"
+              >
                 Threat Hunter
               </span>
             </div>
@@ -65,7 +68,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Center: Repository Preset Picker */}
         <div className="hidden lg:flex items-center gap-2 p-1 rounded-lg bg-neutral-100 dark:bg-neutral-800 text-xs">
-          <span className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 px-2">
+          <span
+            style={{
+              borderStyle: 'groove',
+              borderRadius: '3px',
+              backgroundColor: '#340000',
+            }}
+            className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400 px-2"
+          >
             Target Repo:
           </span>
           <button
@@ -124,6 +134,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Raw JSON viewer */}
           <button
             onClick={onOpenJsonModal}
+            style={{ backgroundColor: '#2f8300' }}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
             title="Inspect Machine-Readable JSON Report"
           >

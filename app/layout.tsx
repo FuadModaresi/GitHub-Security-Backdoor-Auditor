@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     apple: '/magic-favicon.jpg',
   },
   openGraph: {
-    title: 'SGitHub Security Auditor',
+    title: 'GitHub Security Auditor',
     description: 'Principal-grade repository threat hunter, backdoor scanner, and vulnerability auditor dashboard with real-time analytics and code diff remediations.',
     type: 'website',
   },
