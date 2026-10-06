@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import {
   ShieldAlert,
   Moon,
@@ -37,8 +38,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600 to-orange-500 flex items-center justify-center text-white shadow-sm shadow-rose-500/20">
-            <ShieldAlert className="w-5 h-5" />
+          <div className="relative w-9 h-9 rounded-xl overflow-hidden ring-1 ring-rose-500/30 shadow-sm shadow-rose-500/20 flex items-center justify-center bg-neutral-950">
+            <Image
+              src="/magic-favicon.jpg"
+              alt="SentinelAudit Favicon"
+              width={36}
+              height={36}
+              className="w-full h-full object-cover"
+              priority
+            />
           </div>
           <div>
             <div className="flex items-center gap-2">
