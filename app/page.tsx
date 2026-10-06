@@ -413,8 +413,8 @@ export default function SecurityDashboardPage() {
       <footer className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 py-6 mt-12 text-xs text-neutral-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <span className="font-bold text-neutral-800 dark:text-neutral-200">
-              SentinelAudit Security Suite
+            <span className="font-bold text-neutral-900 dark:text-white tracking-tight">
+              Orbit Guardians
             </span>
             <span>·</span>
             <span>OWASP Top 10, CWE-94, CWE-89, CWE-502 &amp; MITRE ATT&amp;CK Audits</span>
