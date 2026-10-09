@@ -1,8 +1,16 @@
-# SentinelAudit: GitHub Security & Backdoor Auditor
+<p align="center">
+  <img src="./public/icon.png" alt="SentinelAudit Logo" width="128" height="128" style="border-radius: 20px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);" />
+</p>
 
-An elite Principal Application Security Engineer, Threat Hunter, and Code Auditor platform designed to detect hidden backdoors, zero-days, supply chain compromises, and critical vulnerabilities across multi-language repositories.
+<h1 align="center">SentinelAudit: GitHub Security & Backdoor Auditor</h1>
 
-Built with **Next.js 15+ (App Router)**, **TypeScript**, **Tailwind CSS**, **Recharts**, and **Google GenAI (Gemini 3.8 Flash)**.
+<p align="center">
+  <strong>An elite Principal Application Security Engineer, Threat Hunter, and Code Auditor platform designed to detect hidden backdoors, zero-days, supply chain compromises, and critical vulnerabilities across multi-language repositories.</strong>
+</p>
+
+<p align="center">
+  Built with <strong>Next.js 15+ (App Router)</strong>, <strong>TypeScript</strong>, <strong>Tailwind CSS</strong>, <strong>Recharts</strong>, and <strong>Google GenAI (Gemini 3.8 Flash)</strong>.
+</p>
 
 ---
 
