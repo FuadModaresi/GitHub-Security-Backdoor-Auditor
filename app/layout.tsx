@@ -7,11 +7,10 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.ico' },
-      { url: '/icon.png', type: 'image/png' },
       { url: '/magic-favicon.jpg', type: 'image/jpeg' },
     ],
     shortcut: '/favicon.ico',
-    apple: '/icon.png',
+    apple: '/magic-favicon.jpg',
   },
   openGraph: {
     title: 'GitHub Security Auditor',
