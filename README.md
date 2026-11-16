@@ -281,6 +281,7 @@ npm run lint
 # Build standalone production bundle
 npm run build
 ```
+[![Architecture diagram of fuadmodaresi/github-security-backdoor-auditor](https://gitdiagram.com/fuadmodaresi/github-security-backdoor-auditor/diagram.png)](https://gitdiagram.com/fuadmodaresi/github-security-backdoor-auditor?utm_source=readme&utm_medium=picture)
 
 ---
 
